@@ -22,9 +22,9 @@ export class UsersQuery {
     return this.usersService.findOne(_id);
   }
 
-  @Query(() => User, { name: 'getCurrentUser' })
+  @Query(() => User, { name: 'whoAmI' })
   @UseGuards(GqlAuthGuard)
-  getCurrentUser(@CurrentUser() user: TokenPayload) {
+  whoAmI(@CurrentUser() user: TokenPayload) {
     return {
       _id: user._id,
       email: user.email,
