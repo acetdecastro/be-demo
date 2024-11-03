@@ -56,4 +56,11 @@ export abstract class AbstractRepository<T extends AbstractEntity> {
   async findOneAndDelete(filterQuery: FilterQuery<T>): Promise<T> {
     return this.model.findOneAndDelete(filterQuery).lean<T>();
   }
+
+  // for DEV purposes only
+  // delete all documents in a given collection
+  async deleteAll(): Promise<number> {
+    const result = await this.model.deleteMany({});
+    return result.deletedCount;
+  }
 }
