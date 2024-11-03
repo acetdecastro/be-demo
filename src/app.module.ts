@@ -7,6 +7,7 @@ import { DatabaseModule } from './common/database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { AxiesModule } from './axies/axies.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     }),
     DatabaseModule,
     AuthModule,
+    AxiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
