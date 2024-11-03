@@ -29,7 +29,7 @@ export class UsersService {
       // MongoError: E11000 duplicate key error collection
       if (error.message.includes('E11000')) {
         throw new UnprocessableEntityException(
-          'this email address is not available',
+          'This email address is not available. Try a different email address.',
         );
       }
       throw error;
@@ -69,7 +69,7 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ email });
     const passwordIsValid = await bcrypt.compare(password, user.password);
     if (!passwordIsValid) {
-      throw new UnauthorizedException('invalid credentials');
+      throw new UnauthorizedException('Invalid credentials.');
     }
     return user;
   }
