@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Logger,
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -11,8 +10,6 @@ import { UsersRepository } from './users.repository';
 
 @Injectable()
 export class UsersService {
-  private readonly logger: Logger;
-
   constructor(private readonly usersRepository: UsersRepository) {}
 
   private async hashPassword(password: string) {

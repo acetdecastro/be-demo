@@ -5,11 +5,11 @@ import { AbstractEntity } from 'src/common/database/abstract.entity';
 @Schema({ versionKey: false, timestamps: true })
 @ObjectType()
 export class User extends AbstractEntity {
-  @Prop({ unique: true })
+  @Prop({ required: true, unique: true })
   @Field({ nullable: false })
   email: string;
 
-  @Prop()
+  @Prop({ required: true })
   password: string;
 }
 
