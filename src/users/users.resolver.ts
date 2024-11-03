@@ -1,13 +1,15 @@
-import { Resolver, Query, Args } from '@nestjs/graphql';
+import { Resolver, Query, Args, Mutation } from '@nestjs/graphql';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth-guard';
 import { CurrentUser } from 'src/auth/current-user.decorator';
 import { TokenPayload } from 'src/auth/token-payload.interface';
+import { CreateUserInput } from './dto/create-user.input';
+import { UpdateUserInput } from './dto/update-user.input';
 
 @Resolver(() => User)
-export class UsersQuery {
+export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   @Query(() => [User], { name: 'users' })
@@ -31,5 +33,25 @@ export class UsersQuery {
       createdAt: new Date(user.createdAt),
       updatedAt: new Date(user.updatedAt),
     };
+  }
+
+  @Mutation(() => User)
+  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+    return this.usersService.create(createUserInput);
+  }
+
+  @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
+  updateUser(
+    @Args('updateUserInput') updateUserInput: UpdateUserInput,
+    @CurrentUser() user: TokenPayload,
+  ) {
+    return this.usersService.update(user._id, updateUserInput);
+  }
+
+  @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
+  removeUser(@CurrentUser() user: TokenPayload) {
+    return this.usersService.remove(user._id);
   }
 }
