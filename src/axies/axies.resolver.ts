@@ -5,6 +5,7 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAuthGuard } from 'src/auth/guards/gql-auth-guard';
 import { AxieListResponse } from './dto/axie-list-response.dto';
 import { AxieClass } from './enums/axie-class.enum';
+import { AxieFetchSaveResponse } from './dto/axie-fetch-save-response.dto';
 
 @Resolver(() => Axie)
 export class AxiesResolver {
@@ -25,7 +26,7 @@ export class AxiesResolver {
     return this.axiesService.getAxiesByClass(axieClass);
   }
 
-  @Mutation(() => String)
+  @Mutation(() => AxieFetchSaveResponse)
   @UseGuards(GqlAuthGuard)
   fetchAndSaveAxies() {
     return this.axiesService.fetchAndSaveAxies();
