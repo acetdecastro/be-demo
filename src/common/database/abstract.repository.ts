@@ -10,12 +10,9 @@ export abstract class AbstractRepository<T extends AbstractEntity> {
   constructor(protected readonly model: Model<T>) {}
 
   async create(document: Omit<T, OmittedFieldsWhenCreating>): Promise<T> {
-    // const newDate = new Date();
     const createdDocument = new this.model({
       ...document,
       _id: new Types.ObjectId(),
-      // createdAt: newDate,
-      // updatedAt: newDate,
     });
     return (await createdDocument.save()).toJSON() as unknown as T;
   }
