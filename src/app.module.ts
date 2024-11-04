@@ -8,6 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { AxiesModule } from './axies/axies.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { GqlThrottlerGuard } from './auth/guards/gql-throttle-guard';
 
 @Module({
   imports: [
@@ -28,11 +31,24 @@ import { AxiesModule } from './axies/axies.module';
         path: 'api/graphql',
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 30000,
+        limit: 5,
+      },
+    ]),
     DatabaseModule,
     AuthModule,
     AxiesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useExisting: GqlThrottlerGuard,
+    },
+    GqlThrottlerGuard,
+  ],
 })
 export class AppModule {}
