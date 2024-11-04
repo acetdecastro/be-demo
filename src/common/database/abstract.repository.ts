@@ -1,6 +1,13 @@
 import { Logger, NotFoundException } from '@nestjs/common';
 import { AbstractEntity } from './abstract.entity';
-import { FilterQuery, Model, Types, UpdateQuery } from 'mongoose';
+import {
+  FilterQuery,
+  Model,
+  Types,
+  UpdateQuery,
+  AnyBulkWriteOperation,
+} from 'mongoose';
+import { BulkWriteResult } from 'mongodb';
 
 type OmittedFieldsWhenCreating = '_id' | 'createdAt' | 'updatedAt';
 
@@ -54,8 +61,22 @@ export abstract class AbstractRepository<T extends AbstractEntity> {
     return this.model.findOneAndDelete(filterQuery).lean<T>();
   }
 
-  // for DEV purposes only
-  // delete all documents in a given collection
+  async bulkWrite(
+    operations: AnyBulkWriteOperation[],
+  ): Promise<BulkWriteResult & { mongoose?: { validationErrors: Error[] } }> {
+    try {
+      const result = await this.model.bulkWrite(operations);
+      return result;
+    } catch (error) {
+      this.logger.error(
+        `Error during bulkWrite operations in ${this.model.modelName}`,
+        error,
+      );
+      throw new Error(error);
+    }
+  }
+
+  // for dev purposes only
   async deleteAll(): Promise<number> {
     const result = await this.model.deleteMany({});
     return result.deletedCount;

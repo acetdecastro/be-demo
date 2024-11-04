@@ -11,12 +11,17 @@ import { ReptileClassRepository } from './repositories/reptile-class.entity';
 import { Axie } from './entities/axie.entity';
 import { AxieListResponse } from './dto/axie-list-response.dto';
 import { AxieClass } from './enums/axie-class.enum';
+import { AxieFetchSaveResponse } from './dto/axie-fetch-save-response.dto';
+import { AxiesRepository } from './repositories/axies.repository';
 
-interface RawAxieResponse {
+// represents the raw axie data fetched from the GraphQL API
+interface RawAxieResponse extends Pick<Axie, 'name' | 'stage' | 'class'> {
   id: string;
-  name: string;
-  stage: number;
-  class: AxieClass;
+}
+
+// represents an axie document that is pending insertion into the database
+interface AxieCreationData extends Pick<Axie, 'name' | 'stage' | 'class'> {
+  axieId: string;
 }
 
 @Injectable()
@@ -44,6 +49,7 @@ export class AxiesService {
     private readonly mechClassRepository: MechClassRepository,
     private readonly dawnClassRepository: DawnClassRepository,
     private readonly duskClassRepository: DuskClassRepository,
+    private readonly axiesRepository: AxiesRepository,
   ) {
     this.logger = new Logger(AxiesService.name);
     this.repositories = [
@@ -80,31 +86,57 @@ export class AxiesService {
       case AxieClass.DUSK:
         return this.duskClassRepository;
       default:
-        return null;
+        return this.axiesRepository;
     }
   }
 
-  private async saveAxiesToMongoDB(axies: RawAxieResponse[]) {
+  private async saveAxiesToMongoDB(
+    axies: RawAxieResponse[],
+  ): Promise<AxieFetchSaveResponse> {
+    const axieDataByClass: { [key in AxieClass]?: AxieCreationData[] } = {};
+
+    // group axies by their class for processing with each repository
     for (const axie of axies) {
-      const repository = this.getRepositoryByClass(axie.class);
+      // checks if axie's class from the external API exists in the current implementation,
+      // set to empty [] if it doesn't exist
+      if (!axieDataByClass[axie.class]) {
+        axieDataByClass[axie.class] = [];
+      }
+      axieDataByClass[axie.class].push({
+        axieId: axie.id,
+        name: axie.name,
+        stage: axie.stage,
+        class: axie.class,
+      });
+    }
+
+    let upsertedCount = 0;
+
+    // upsert each class of axie using bulkWrite
+    for (const axieClass of Object.keys(axieDataByClass) as AxieClass[]) {
+      const repository = this.getRepositoryByClass(axieClass);
+      const axieData = axieDataByClass[axieClass] || [];
+
+      const bulkOperations = axieData.map((axie) => ({
+        updateOne: {
+          filter: { axieId: axie.axieId },
+          update: { $set: axie },
+          upsert: true, // duplicate axieIds will be skipped/ignored
+        },
+      }));
 
       try {
-        await repository.create({
-          axieId: axie.id,
-          name: axie.name,
-          stage: axie.stage,
-          class: axie.class,
-        });
+        const result = await repository.bulkWrite(bulkOperations);
+        upsertedCount += result.upsertedCount; // track successful upserts
       } catch (error) {
-        // MongoError: E11000 duplicate key error collection
-        if (error.message.includes('E11000')) {
-          this.logger.warn(`Duplicate Axie ID: ${axie.id} - skipping.`);
-          continue;
-        }
-        this.logger.error(`Error while saving Axies: ${error}`);
+        this.logger.error(
+          `Error while saving Axies for class ${axieClass}: ${error}`,
+        );
         throw new Error(error);
       }
     }
+
+    return { upsertedCount };
   }
 
   private async fetchAxiesFromAPI(
@@ -156,13 +188,16 @@ export class AxiesService {
     return data.data?.axies?.results ?? [];
   }
 
-  async fetchAndSaveAxies(size: number = 300): Promise<string> {
+  async fetchAndSaveAxies(
+    size: number = 300,
+  ): Promise<string | AxieFetchSaveResponse> {
     const axies = await this.fetchAxiesFromAPI(size);
     if (!axies) {
-      return 'No axies fetched.';
+      return {
+        upsertedCount: 0,
+      };
     }
-    await this.saveAxiesToMongoDB(axies);
-    return 'Successful operation.';
+    return await this.saveAxiesToMongoDB(axies);
   }
 
   async getAxiesByClass(axieClass?: AxieClass): Promise<AxieListResponse> {
