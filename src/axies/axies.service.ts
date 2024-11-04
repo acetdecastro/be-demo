@@ -12,7 +12,7 @@ import { Axie } from './entities/axie.entity';
 import { AxieListResponse } from './dto/axie-list-response.dto';
 import { AxieClass } from './enums/axie-class.enum';
 import { AxieFetchSaveResponse } from './dto/axie-fetch-save-response.dto';
-import { AxiesRepository } from './repositories/axies.repository';
+import { UpdateOneModel } from 'mongoose';
 
 // represents the raw axie data fetched from the GraphQL API
 interface RawAxieResponse extends Pick<Axie, 'name' | 'stage' | 'class'> {
@@ -49,7 +49,6 @@ export class AxiesService {
     private readonly mechClassRepository: MechClassRepository,
     private readonly dawnClassRepository: DawnClassRepository,
     private readonly duskClassRepository: DuskClassRepository,
-    private readonly axiesRepository: AxiesRepository,
   ) {
     this.repositories = [
       this.beastClassRepository,
@@ -85,7 +84,7 @@ export class AxiesService {
       case AxieClass.DUSK:
         return this.duskClassRepository;
       default:
-        return this.axiesRepository;
+        return null;
     }
   }
 
@@ -96,8 +95,6 @@ export class AxiesService {
 
     // group axies by their class for processing with each repository
     for (const axie of axies) {
-      // checks if axie's class from the external API exists in the current implementation,
-      // set to empty [] if it doesn't exist
       if (!axieDataByClass[axie.class]) {
         axieDataByClass[axie.class] = [];
       }
@@ -111,9 +108,17 @@ export class AxiesService {
 
     let upsertedCount = 0;
 
-    // upsert each class of axie using bulkWrite
+    // upsert each group of axies using bulkWrite
     for (const axieClass of Object.keys(axieDataByClass) as AxieClass[]) {
       const repository = this.getRepositoryByClass(axieClass);
+
+      if (!repository) {
+        this.logger.warn(
+          `No repository found for axie class: ${axieClass}. Skipping...`,
+        );
+        continue;
+      }
+
       const axieData = axieDataByClass[axieClass] || [];
 
       const bulkOperations = axieData.map((axie) => ({
@@ -121,7 +126,7 @@ export class AxiesService {
           filter: { axieId: axie.axieId },
           update: { $set: axie },
           upsert: true, // duplicate axieIds will be skipped/ignored
-        },
+        } as UpdateOneModel,
       }));
 
       try {

@@ -2,7 +2,7 @@ import { Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectType } from '@nestjs/graphql';
 import { Axie } from './axie.entity';
 
-@Schema({ collection: 'dusk_class', timestamps: true })
+@Schema({ versionKey: false, collection: 'dusk_class', timestamps: true })
 @ObjectType()
 export class DuskClass extends Axie {}
 
