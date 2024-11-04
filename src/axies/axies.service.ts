@@ -26,7 +26,7 @@ interface AxieCreationData extends Pick<Axie, 'name' | 'stage' | 'class'> {
 
 @Injectable()
 export class AxiesService {
-  private readonly logger: Logger;
+  private readonly logger: Logger = new Logger(AxiesService.name);
   private readonly repositories: (
     | BeastClassRepository
     | PlantClassRepository
@@ -51,7 +51,6 @@ export class AxiesService {
     private readonly duskClassRepository: DuskClassRepository,
     private readonly axiesRepository: AxiesRepository,
   ) {
-    this.logger = new Logger(AxiesService.name);
     this.repositories = [
       this.beastClassRepository,
       this.plantClassRepository,
