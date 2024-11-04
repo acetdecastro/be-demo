@@ -30,8 +30,6 @@ import { BugClassRepository } from './repositories/bug-class.entity';
 import { ReptileClassRepository } from './repositories/reptile-class.entity';
 import { UsersRepository } from 'src/users/users.repository';
 import { User, UserSchema } from 'src/users/entities/user.entity';
-import { Axie, AxieSchema } from './entities/axie.entity';
-import { AxiesRepository } from './repositories/axies.repository';
 
 @Module({
   imports: [
@@ -45,7 +43,6 @@ import { AxiesRepository } from './repositories/axies.repository';
       { name: MechClass.name, schema: MechClassSchema },
       { name: DawnClass.name, schema: DawnClassSchema },
       { name: DuskClass.name, schema: DuskClassSchema },
-      { name: Axie.name, schema: AxieSchema },
       { name: User.name, schema: UserSchema },
     ]),
   ],
@@ -61,7 +58,6 @@ import { AxiesRepository } from './repositories/axies.repository';
     MechClassRepository,
     DawnClassRepository,
     DuskClassRepository,
-    AxiesRepository,
     UsersRepository,
   ],
 })
