@@ -29,7 +29,7 @@ mutation {
   }
 }
 ```
-2. Log In: Make a POST request to `/api/auth/login` with the request body. Once logged in, you can then send requests to protected endpoints/routes.
+2. Log In: Make a POST request to `/api/auth/login` with the request body. Once logged in, an Authentication cookie is added along with the JWT token. You can then send requests to protected endpoints/routes.
 ```json
 { "email": "", "password": "" }
 ```
