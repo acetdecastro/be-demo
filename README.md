@@ -14,7 +14,7 @@ Start the project:
 $ docker compose up --build
 ```
 
-## Authentication
+## Users
 1. Sign Up: Use the `signUp` GraphQL mutation via `/api/graphql`.
 ```graphQL
 mutation {
@@ -29,11 +29,13 @@ mutation {
   }
 }
 ```
-2. Log In: Make a POST request to `/api/auth/login` with the request body. Once logged in, an Authentication cookie is added along with the JWT token. You can then send requests to protected endpoints/routes.
+
+## Authentication
+1. Log In: Make a POST request to `/api/auth/login` with the request body. Once logged in, an Authentication cookie is added along with the JWT token. You can then send requests to protected endpoints/routes.
 ```json
 { "email": "", "password": "" }
 ```
-3. Log Out: Make a POST request to `/api/auth/logout`.
+2. Log Out: Make a POST request to `/api/auth/logout`.
 
 ## Axie
 1. Fetch and Save Axies: Use the GraphQL `fetchAndSaveAxies` mutation:
