@@ -11,6 +11,7 @@ import { AxiesModule } from './axies/axies.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GqlThrottlerGuard } from './auth/guards/gql-throttle-guard';
+import { BlockchainModule } from './blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GqlThrottlerGuard } from './auth/guards/gql-throttle-guard';
         PORT: Joi.number().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.number().required(),
+        INFURA_API_KEY: Joi.string().required(),
       }),
     }),
     GraphQLModule.forRootAsync<ApolloDriverConfig>({
@@ -40,6 +42,7 @@ import { GqlThrottlerGuard } from './auth/guards/gql-throttle-guard';
     DatabaseModule,
     AuthModule,
     AxiesModule,
+    BlockchainModule,
   ],
   controllers: [AppController],
   providers: [
