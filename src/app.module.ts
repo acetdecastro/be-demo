@@ -19,7 +19,6 @@ import { BlockchainModule } from './blockchain/blockchain.module';
       isGlobal: true,
       validationSchema: Joi.object({
         MONGODB_URI: Joi.string().required(),
-        DB_NAME: Joi.string().required(),
         PORT: Joi.number().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRATION: Joi.number().required(),
@@ -35,8 +34,8 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     }),
     ThrottlerModule.forRoot([
       {
-        ttl: 30000,
-        limit: 5,
+        ttl: 60000,
+        limit: 10,
       },
     ]),
     DatabaseModule,
